@@ -25,6 +25,7 @@ func GormDB() *gorm.DB {
 func RegisterTables(db *gorm.DB) {
 	err := db.AutoMigrate(
 		model.User{},
+		model.TblFile{},
 	)
 	if err != nil {
 		log.Fatal("初始化失败", err)
