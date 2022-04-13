@@ -7,8 +7,8 @@ import (
 	"github.com/yangsen996/ExamplesWebSite/model"
 	"github.com/yangsen996/ExamplesWebSite/server"
 	"github.com/yangsen996/ExamplesWebSite/utils"
+	"log"
 	"net/http"
-	"time"
 )
 
 type File struct{}
@@ -24,33 +24,30 @@ func (uf *File) UploadFile(c *gin.Context) {
 		fmt.Println(err)
 		return
 	}
-	fmta := model.FileMeta{
-		FileName:     file.Filename,
-		FileSize:     file.Size,
-		LocationPath: "C:\\Users\\83872\\Desktop\\uploadfile\\" + file.Filename,
-		UploadAt:     time.Now().Format("2006-01-02 15:05"),
-	}
-	err = c.SaveUploadedFile(file, fmta.LocationPath)
-	if err != nil {
-		c.JSON(http.StatusOK, "上传文件失败")
-		fmt.Println(err)
-		return
-	} else {
-		model.AddFileMeta(fmta)
 
-	}
-
-	shal := utils.MD5([]byte(fmta.FileName))
+	shal := utils.MD5([]byte(file.Filename))
+	log.Println("shal", shal)
 	tbfile := model.TblFile{
 		FileShal: shal,
-		FileName: fmta.FileName,
+		FileName: file.Filename,
 		FileSize: int(file.Size),
 		FileAddr: "C:\\Users\\83872\\Desktop\\uploadfile\\" + file.Filename,
 		Status:   0,
 	}
+
+	//todo 上传文件和上传用户文件表做事务
+	//tx := global.G_DB.Begin()
+
 	if !server.NewFile().AddFile(tbfile) {
 		c.JSON(http.StatusOK, "上传文件失败")
 		return
+	} else {
+		err = c.SaveUploadedFile(file, tbfile.FileAddr)
+		if err != nil {
+			c.JSON(http.StatusOK, "上传文件失败")
+			fmt.Println(err)
+			return
+		}
 	}
 	c.JSON(http.StatusOK, "上传文件成功")
 }

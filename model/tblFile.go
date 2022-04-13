@@ -10,3 +10,7 @@ type TblFile struct {
 	Ext1     int    `json:"ext1" gorm:"default:0;comment:备用字段1"`
 	Ext2     int    `json:"ext2" gorm:"default:0;comment:备用字段2"`
 }
+
+func (*TblFile) TableName() string {
+	return "tblfile"
+}
